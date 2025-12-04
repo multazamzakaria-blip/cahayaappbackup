@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP - Asesmen Naqib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+      margin: 0;
+      padding: 20px;
+      color: #1f2937;
+    }
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 14px 20px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    button:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-secondary { background: #6b7280; }
+    .btn-secondary:hover { background: #4b5563; }
+
+    main {
+      background: white;
+      margin-top: 20px;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h2 { margin-top: 0; color: #1e3a8a; }
+    h3 { margin-top: 24px; font-size: 1.1rem; }
+    label { font-weight: 600; margin-top: 10px; display: block; }
+
+    select, input, textarea {
+      padding: 9px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 0.95rem;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    textarea { resize: vertical; background: #f9fafb; min-height: 60px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* 🌿 Akhlak Mulia */
+    .relational th {
+      background: linear-gradient(90deg, #bbf7d0, #86efac);
+    }
+    .relational tr:nth-child(even) { background: #f0fdf4; }
+
+    /* 💜 Hati Bersih */
+    .emotional th {
+      background: linear-gradient(90deg, #e9d5ff, #c084fc);
+    }
+    .emotional tr:nth-child(even) { background: #f5f3ff; }
+
+    /* 💪 Fisik Berdaya */
+    .physical th {
+      background: linear-gradient(90deg, #bfdbfe, #93c5fd);
+    }
+    .physical tr:nth-child(even) { background: #eff6ff; }
+
+    /* warna sel skor 0–3 */
+    .score-cell { transition: background-color 0.2s, color 0.2s; }
+
+    hr.sep {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 24px 0;
+    }
+    .note {
+      font-size: 0.85rem;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 700px) {
+      header { align-items: flex-start; gap: 8px; }
+      main { padding: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>CAHAYA APP – Asesmen Perkembangan Santri</h1>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn-secondary" onclick="goBack()">⬅️ Dashboard</button>
+    <button onclick="logout()">Keluar</button>
+  </div>
+</header>
+
+<main>
+  <h2>Perkembangan Dimensi CAHAYA — <span id="naqibLabelPerk"></span></h2>
+  <p class="note">
+    Skala: 0 = Belum nampak, 1 = Kadang, 2 = Sering, 3 = Konsisten.
+  </p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+    <div style="flex:1;min-width:180px">
+      <label>Tanggal Asesmen</label>
+      <input type="date" id="perkTanggal">
+    </div>
+    <div style="flex:1;min-width:220px">
+      <label>Nama Santri</label>
+      <select id="perkSantri"><option value="">-- Pilih Santri --</option></select>
+    </div>
+  </div>
+
+  <!-- 🌿 Akhlak Mulia -->
+  <hr class="sep">
+  <h3>II. 🤝 Akhlak Mulia (SMILE+)</h3>
+  <div id="akhlakTables" class="relational"></div>
+  <p><b>Rata-rata:</b> <span id="perkAkhlakAvg">0.00</span> |
+  <b>Predikat:</b> <span id="perkAkhlakPredikatLabel">-</span></p>
+  <textarea id="perkAkhlakCatatan" placeholder="Catatan perkembangan Akhlak Mulia..."></textarea>
+
+  <!-- 💜 Hati Bersih -->
+  <hr class="sep">
+  <h3>III. 💜 Hati Bersih (Emotional)</h3>
+  <div id="hatiTables" class="emotional"></div>
+  <p><b>Rata-rata:</b> <span id="perkHatiAvg">0.00</span> |
+  <b>Predikat:</b> <span id="perkHatiPredikatLabel">-</span></p>
+  <textarea id="perkHatiCatatan" placeholder="Catatan perkembangan Hati Bersih..."></textarea>
+
+  <!-- 💪 Fisik Berdaya -->
+  <hr class="sep">
+  <h3>V. 💪 Fisik Berdaya (Physical)</h3>
+  <div id="fisikTables" class="physical"></div>
+  <p><b>Rata-rata:</b> <span id="perkFisikAvg">0.00</span> |
+  <b>Predikat:</b> <span id="perkFisikPredikatLabel">-</span></p>
+  <textarea id="perkFisikCatatan" placeholder="Catatan perkembangan Fisik Berdaya..."></textarea>
+
+  <hr class="sep">
+  <label>Rekomendasi Tindak Lanjut:</label>
+  <textarea id="perkRekomendasi" placeholder="Contoh: latihan adab berbicara, diberi amanah kecil, dibuat checklist kebersihan."></textarea>
+
+  <br><br>
+  <button id="btnSimpan">💾 Simpan Asesmen</button>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam",
+    storageBucket: "absensi-santri-fajrul-islam.appspot.com",
+    messagingSenderId: "739928369926",
+    appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // === DATA SANTRI BERDASARKAN NAQIB (sama seperti pelanggaran) ===
+  const dataSantri = {
+    "Regen":[ "AHMAD MAULANA","JUANDA NUR ILHAM","NAJMIHADI SYAUQII TAMAAM","NIZAM KABISAT","MOHAMMAD IKHSAN HAIRULI","REYFAS RAMADHAN","EZA FEBRI AL FADZRI","HAFIDZ AL ROZI","ANDES AFENDRA","FEBRI GHALIH AL FAROBI","DANANG PRASDITYA SANTOSO","MUHAMMAD RAID MAHRUS","MUHAMMAD DIRGATAMA","CANZA RYANDA HUTASUHUT","FALIZH DAFFA QATRUNNADA","DAFFA AL MUSYARI","RAFI RAMADHAN","WAHYU REYDINATA","AKBAR PRAYOGA","VERY SYACH","MUHAMMAD AL FALAH"],
+    "Kamal":[ "ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","MUHAMMAD ALMISKY PRATAMA","MUHAMMAD AQIL RIDHO","MUHAMMAD IZAM SAPUTRA","MUHAMMAD SYAKIR HUTABARAT","MUHAMMAD ZIYAD ZHAZHA","MUHAMMAD YASIR AL FAZAR JHIRA","RAFA"],
+    "Favian":[ "ANGGA PRATAMA PUTRA","PRAWIRO PUJO TUNGGAL JATI","MUHAMMAD MARPIN","MARFEL SAPUTRA","MELDI NOVRIANSYAH","FAUZAN IBNI JABAR","MUHAMMAD FADHIL BUANA","QHEIZAN ALQIZA ARISDA","REZFY FAKHRYAZKA","MIKA RAHEL YUSUF","KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI","ARYA DIFA ALSYA","REYNALDI MALIK IBRAHIM ALFARIDZI","MUHAMMAD XAVI NF","MUHAMMAD FAISAL FIKRIANSYAH","HAFIDZ ALRIZKY","NAUFAL AKBAR ALKHATIRI","FARAZH SAYYID PUTRA KENEGA","SYAHRUL RAMADHAN","LUTHFAN ADZAKI","MUHAMMAD ABIL IRWANSYAH","ALIF SAMUDRA","FAHRIE OKTAVIRANO FITRIS"],
+    "Dimas":[ "DIKKI KURNIAWAN","GHOZY FATURRAHMAN","MUHAMMAD THOORIQ","AHMAD RIYADI","ALIF MUHAMMAD YUSUF","BASRI AL HAZIQ ZULFAHMI","MUHAMMAD FAQIH HAFIDZALLAH","ABDULLAH MUKTI HAFIDZALLAH","DEDI SETIADI","FAKHRI AL MUZAKKI","ILHAM MUKMIN AL FARABI","MUHAMMAD ALLAM NUR HUSAIN","MUHAMMAD FIRAAS AL INSYIROH","NABIL NAJMI","SATRIO ABIMAYU","TEGAR HIDAYAT","WAFII FADHLURROHMAN","MUHAMMAD RIJALUL KAMIL","ALVIN HERFIANTINO","ZAHIR ZIBRAN","RADEN AZAA PANCA PUTRA","ZULFAKIH HAERUNNASIHIN"],
+    "Shafwan":[ "AHMAD FARHAAN","ANUGRAH PRATAMA","CAHYIS ISZAM","FAHRY AKBAR RAMDHANI","HABIB RAMADHAN","IHZA TRINANDI","ILHAM","M.ARYA MAHDI WAFI EL-FAUZANI","MAHESA AULIA GIFFARI","MUHAMAD YUSUF ARROSIYD","MUHAMMAD RAYYAN HAFIZ","MUHAMMAD USAMAH","NAFIS","RAKA SEPTIAN","RENAL MARTIN","ROHADIN FIRDAUS AL QAUSAR","ROID AFDAL"],
+    "Fatimah":[ "NILAM CAHYA","QELZA RAMADHANI ATH THAHIRAH","ASHIFA FITRI RAMADHONI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","NYAYU MARLITSA ARDHANI","WILDA","WINDY WINDARI","AISYAH NURUL AULIA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","EARLYTA ARSYFA SALSABILA","DAFIA NAFLA SYAKIRA","ANISYA SEPTIANI"],
+    "Evita":[ "BILQIS NUR ANISAH","JESSICA PUTRY AYRA","GHENIS ANDIENTIAZ","DINA RUHAYAH","PITRI RAMADANI","GRINNETA NALANI PUTRI","INAYAH NOURAH ANINDYA","SHELENA","FITRAH KIRANA"]
+  };
+
+  // === STRUKTUR GRUP & INDIKATOR SESUAI FORMAT ASLI ===
+  const akhlakGroups = [
+    {
+      key: "self_love",
+      label: "Self Love",
+      items: [
+        "Butterfly Hug"
+      ]
+    },
+    {
+      key: "meaningful_comm",
+      label: "Meaningful Communication",
+      items: [
+        "Terimakasih",
+        "Maaf",
+        "Minta tolong",
+        "Permisi",
+        "Salam Senyum",
+        "Memuji teman",
+        "Melayani teman",
+        "Memijit teman",
+        "Mendoakan teman",
+        "Mendoakan orang tua",
+        "Mendoakan guru",
+        "Mendoakan Naqib"
+      ]
+    },
+    {
+      key: "intentional_giving",
+      label: "Intentional Giving",
+      items: [
+        "Memberi Sedekah/hadiah"
+      ]
+    },
+    {
+      key: "living_together",
+      label: "Living Together",
+      items: [
+        "Khidmat usrah",
+        "Makan bareng usrah",
+        "Olahraga bareng usrah",
+        "Ngelakar bareng teman usrah"
+      ]
+    },
+    {
+      key: "empathy",
+      label: "Empathy",
+      items: [
+        "Kamu bercerita aku mendengar"
+      ]
+    },
+    {
+      key: "akhlak_alam",
+      label: "Akhlak Pada Alam",
+      items: [
+        "Memungut sampah berserak tanpa disuruh",
+        "Merapikan yang berantakan tanpa disuruh",
+        "Memutar sendal setiap kali masuk kamar/masjid",
+        "Menjaga dan merapikan barang-barang pribadi"
+      ]
+    }
+  ];
+
+  const hatiGroups = [
+    {
+      key: "rilis_emosi",
+      label: "Rilis Emosi Negatif",
+      items: [
+        "Cuci Hati Sebelum Tidur",
+        "Journaling"
+      ]
+    },
+    {
+      key: "booster_emosi",
+      label: "Booster Emosi Positif",
+      items: [
+        "Meditasi Syukur",
+        "Gratitude Luck Diary"
+      ]
+    }
+  ];
+
+  const fisikGroups = [
+    {
+      key: "harian",
+      label: "Harian",
+      items: [
+        "Daily Exercises",
+        "Qailulah",
+        "Mandi Pagi",
+        "Mandi Sore",
+        "Sikat Gigi Sebelum Tidur",
+        "Sikat Gigi Setelah Sarapan",
+        "Cuci Tangan Sebelum dan Sesudah Makan"
+      ]
+    },
+    {
+      key: "pekanan",
+      label: "Pekanan",
+      items: [
+        "Puasa Kamis",
+        "PBB",
+        "Merapikan kuku",
+        "Menjemur Kasur, Bantal dan Selimut"
+      ]
+    }
+  ];
+
+  // === BANGUN TABEL DINAMIS + SUBTOTAL & TOTAL ===
+  function isiTabel(containerId, groups, dimKey, dimLabel) {
+    const div = document.getElementById(containerId);
+    div.innerHTML = "";
+    groups.forEach(group => {
+      let html = `
+        <h4>${group.label}</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Indikator</th>
+              <th>Skor (0–3)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      group.items.forEach(item => {
+        html += `
+          <tr>
+            <td style="text-align:left">${item}</td>
+            <td class="score-cell">
+              <select class="perk-skor" data-dim="${dimKey}" data-group="${group.key}">
+                <option value="0">0 - Belum nampak</option>
+                <option value="1">1 - Kadang</option>
+                <option value="2">2 - Sering</option>
+                <option value="3">3 - Konsisten</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      });
+      // Sub Total per grup
+      html += `
+        <tr class="subtotal-row">
+          <td style="text-align:left"><b>Sub Total ${group.label}</b></td>
+          <td><span class="subtotal-value" data-dim="${dimKey}" data-group="${group.key}">0.00</span></td>
+        </tr>
+      `;
+      html += `</tbody></table>`;
+      div.innerHTML += html;
+    });
+
+    // TOTAL dimensi
+    div.innerHTML += `
+      <table>
+        <tbody>
+          <tr class="total-row">
+            <td style="text-align:left"><b>TOTAL ${dimLabel}</b></td>
+            <td><span class="dim-total-value" data-dim="${dimKey}">0.00</span></td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  // === WARNA OTOMATIS SEL SKOR ===
+  function updateSkorColor(selectEl) {
+    const val = parseInt(selectEl.value, 10);
+    const td = selectEl.parentElement;
+    let bg = "#ffffff";
+    let color = "#111827";
+
+    if (val === 0) {      // merah lembut
+      bg = "#fee2e2"; color = "#b91c1c";
+    } else if (val === 1) { // kuning
+      bg = "#fef3c7"; color = "#92400e";
+    } else if (val === 2) { // hijau muda
+      bg = "#dcfce7"; color = "#166534";
+    } else if (val === 3) { // hijau kuat
+      bg = "#bbf7d0"; color = "#166534";
+    }
+
+    td.style.backgroundColor = bg;
+    td.style.color = color;
+  }
+
+  function setupSkorListeners() {
+    const selects = document.querySelectorAll(".perk-skor");
+    selects.forEach(sel => {
+      updateSkorColor(sel); // set awal
+      sel.addEventListener("change", () => {
+        updateSkorColor(sel);
+        hitung(sel.dataset.dim);
+      });
+    });
+  }
+
+  // === ISI SANTRI SESUAI NAQIB ===
+  function isiSantriByNaqib(naqibKey) {
+    const select = document.getElementById("perkSantri");
+    select.innerHTML = '<option value="">-- Pilih Santri --</option>';
+    const list = dataSantri[naqibKey] || [];
+    if (!list.length) {
+      const opt = document.createElement("option");
+      opt.textContent = "(Belum ada santri untuk " + naqibKey + ")";
+      select.appendChild(opt);
+      return;
+    }
+    list.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      select.appendChild(opt);
+    });
+  }
+
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // === HITUNG RATA-RATA, SUBTOTAL & TOTAL PER DIMENSI ===
+  function hitung(dim) {
+    const selects = document.querySelectorAll(`.perk-skor[data-dim="${dim}"]`);
+    let total = 0, count = 0;
+    const groupAgg = {};
+
+    selects.forEach(sel => {
+      const v = parseInt(sel.value, 10) || 0;
+      const g = sel.dataset.group || "default";
+      total += v;
+      count++;
+      if (!groupAgg[g]) groupAgg[g] = { total: 0, count: 0 };
+      groupAgg[g].total += v;
+      groupAgg[g].count++;
+    });
+
+    const avg = count ? total / count : 0;
+    const label = avg < 1.5 ? "Kadang" : avg < 2.5 ? "Sering" : "Konsisten";
+
+    // set teks rata-rata & predikat (di atas)
+    document.getElementById(`perk${capitalize(dim)}Avg`).textContent = avg.toFixed(2);
+    document.getElementById(`perk${capitalize(dim)}PredikatLabel`).textContent = label;
+
+    // set TOTAL dimensi
+    const totalSpan = document.querySelector(`.dim-total-value[data-dim="${dim}"]`);
+    if (totalSpan) totalSpan.textContent = avg.toFixed(2);
+
+    // set SUBTOTAL per grup
+    Object.entries(groupAgg).forEach(([g, val]) => {
+      const subSpan = document.querySelector(`.subtotal-value[data-dim="${dim}"][data-group="${g}"]`);
+      if (subSpan) {
+        const subAvg = val.count ? val.total / val.count : 0;
+        subSpan.textContent = subAvg.toFixed(2);
+      }
+    });
+  }
+
+  // === NARASI OTOMATIS EMPATIK & EVALUATIF (tanpa skor rata-rata) ===
+function buatNarasi(dimLabel, dimKey, namaSantri) {
+  const selects = document.querySelectorAll(`.perk-skor[data-dim="${dimKey}"]`);
+  if (!selects.length) {
+    return `Belum terdapat asesmen pada dimensi ${dimLabel} untuk Ananda ${namaSantri}.`;
+  }
+
+  const data = [];
+  selects.forEach(sel => {
+    const row = sel.closest("tr");
+    if (!row) return;
+    const indikator = row.children[0].innerText.trim();
+    const skor = parseInt(sel.value, 10) || 0;
+    data.push({ indikator, skor });
+  });
+
+  if (!data.length) {
+    return `Belum terdapat asesmen pada dimensi ${dimLabel} untuk Ananda ${namaSantri}.`;
+  }
+
+  // Ambil indikator terkuat dan terlemah
+  const maxItem = data.reduce((a, b) => (a.skor > b.skor ? a : b));
+  const minItem = data.reduce((a, b) => (a.skor < b.skor ? a : b));
+
+  // Tentukan kalimat evaluatif utama
+  let pembuka = `Pada dimensi ${dimLabel}, Ananda ${namaSantri} menunjukkan perkembangan yang mulai tampak dalam perilaku sehari-hari. `;
+  let pujian = `Aspek "${maxItem.indikator}" sudah terlihat berkembang dan menjadi kekuatan yang patut dipertahankan. `;
+  let perbaikan = `Sementara itu, indikator "${minItem.indikator}" masih memerlukan perhatian lebih agar menjadi kebiasaan yang konsisten. `;
+  let penutup = `Diharapkan Ananda ${namaSantri} terus mengasah kebiasaan positif tersebut melalui pembiasaan terarah, keteladanan, dan tanggung jawab pribadi.`;
+
+  return pembuka + pujian + perbaikan + penutup;
+}
+
+
+  // === SIMPAN KE FIREBASE ===
+  function simpanPerkembanganCahaya() {
+    const santri = document.getElementById("perkSantri").value;
+    if (!santri) {
+      alert("Pilih nama santri terlebih dahulu.");
+      return;
+    }
+    const tgl = document.getElementById("perkTanggal").value || new Date().toISOString().split("T")[0];
+    const user = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}");
+    const naqibName = user.naqibName || user.username || user.label || user.name || "Naqib";
+
+    // hitung rata-rata & subtotal per dimensi
+    hitung("akhlak");
+    hitung("hati");
+    hitung("fisik");
+
+    // narasi otomatis (hanya isi jika textarea masih kosong, supaya bisa diedit)
+    const akhlakTextAuto = buatNarasi("Akhlak Mulia (SMILE+)", "akhlak", santri);
+    const hatiTextAuto   = buatNarasi("Hati Bersih (Emotional)", "hati", santri);
+    const fisikTextAuto  = buatNarasi("Fisik Berdaya (Physical)", "fisik", santri);
+
+    const akhlakArea = document.getElementById("perkAkhlakCatatan");
+    const hatiArea   = document.getElementById("perkHatiCatatan");
+    const fisikArea  = document.getElementById("perkFisikCatatan");
+
+    if (!akhlakArea.value.trim()) akhlakArea.value = akhlakTextAuto;
+    if (!hatiArea.value.trim())   hatiArea.value   = hatiTextAuto;
+    if (!fisikArea.value.trim())  fisikArea.value  = fisikTextAuto;
+
+    const data = {
+      tanggal: tgl,
+      namaSantri: santri,
+      naqibName: naqibName,
+      narasiRelational: akhlakArea.value.trim(),
+      narasiEmotional: hatiArea.value.trim(),
+      narasiPhysical: fisikArea.value.trim(),
+      rekomendasi: document.getElementById("perkRekomendasi").value.trim(),
+      waktuSimpan: new Date().toISOString()
+    };
+
+    const refPath = ref(db, "cahaya_app/assesment_cahaya_naqib");
+    push(refPath, data)
+      .then(() => {
+        alert(`✅ Asesmen Ananda ${santri} oleh ${naqibName} tersimpan ke Firebase.`);
+      })
+      .catch(err => {
+        alert("❌ Gagal menyimpan: " + err.message);
+      });
+  }
+
+  // === INIT ===
+  function init() {
+    const user = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "null");
+    if (!user || user.role !== "naqib") {
+      alert("Silakan login sebagai Naqib terlebih dahulu.");
+      window.location.href = "../index.html";
+      return;
+    }
+
+    const naqibKey = user.naqibName || user.username || "Naqib";
+    const displayName = user.label || ("Naqib " + naqibKey);
+    document.getElementById("naqibLabelPerk").textContent = displayName;
+
+    document.getElementById("perkTanggal").value = new Date().toISOString().split("T")[0];
+
+    isiSantriByNaqib(naqibKey);
+    isiTabel("akhlakTables", akhlakGroups, "akhlak", "Akhlak Mulia");
+    isiTabel("hatiTables",   hatiGroups,   "hati",   "Hati Bersih");
+    isiTabel("fisikTables",  fisikGroups,  "fisik",  "Fisik Berdaya");
+    setupSkorListeners();
+
+    document.getElementById("btnSimpan").addEventListener("click", simpanPerkembanganCahaya);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+</script>
+
+<script>
+  function goBack() {
+    window.location.href = 'dashboard.html';
+  }
+  function logout() {
+    localStorage.removeItem('cahayaCurrentUser');
+    window.location.href = '../index.html';
+  }
+</script>
+
+</body>
+</html>
+

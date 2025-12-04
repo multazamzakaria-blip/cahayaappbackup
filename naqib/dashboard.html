@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP – Naqib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --bg: linear-gradient(135deg, #1e3a8a, #2563eb);
+    }
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: var(--bg);
+      color: white;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.2rem; margin: 0; font-weight: 600; }
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+    h2 { margin: 0; font-size: 1.4rem; color: #fff; }
+    .small { font-size: 0.9rem; color: #dbeafe; margin-bottom: 20px; }
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    button {
+      background: white;
+      color: var(--primary);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: var(--primary); color: white; }
+    footer {
+      text-align: center;
+      font-size: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌟 CAHAYA APP – Naqib</h1>
+  <div class="btn-group" style="gap:6px;">
+    <button onclick="backToPortal()">⬅️ Portal</button>
+    <button onclick="logout()">🚪 Keluar</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2 id="naqibTitle">Dashboard Naqib</h2>
+    <p class="small" id="naqibInfo">Mengambil data kelompok...</p>
+
+    <div class="btn-group">
+      <button onclick="go('absensi.html')">🧍 Absensi Program Harian</button>
+      <button onclick="go('pelanggaran.html')">🚨 Form Pelanggaran</button>
+      <button onclick="go('assasment.html')">💚 CAHAYA Assessment</button>
+    </div>
+
+    <p class="small" style="margin-top:18px;">
+      Isi dengan <b>teliti dan objektif</b>, demi kebaikan bersama.
+    </p>
+  </div>
+</main>
+
+<footer>
+  © 2025 Pesantren Cahaya Fajrul Islam — Naqib Dashboard
+</footer>
+
+<script>
+  // === DATABASE KELOMPOK SANTRI ===
+  const dataSantri = {
+    "Regen":[ "AHMAD MAULANA","JUANDA NUR ILHAM","NAJMIHADI SYAUQII TAMAAM","NIZAM KABISAT","MOHAMMAD IKHSAN HAIRULI","REYFAS RAMADHAN","EZA FEBRI AL FADZRI","HAFIDZ AL ROZI","ANDES AFENDRA","FEBRI GHALIH AL FAROBI","DANANG PRASDITYA SANTOSO","MUHAMMAD RAID MAHRUS","MUHAMMAD DIRGATAMA","CANZA RYANDA HUTASUHUT","FALIZH DAFFA QATRUNNADA","DAFFA AL MUSYARI","RAFI RAMADHAN","WAHYU REYDINATA","AKBAR PRAYOGA","VERY SYACH","MUHAMMAD AL FALAH"],
+    "Kamal":[ "ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","MUHAMMAD ALMISKY PRATAMA","MUHAMMAD AQIL RIDHO","MUHAMMAD IZAM SAPUTRA","MUHAMMAD SYAKIR HUTABARAT","MUHAMMAD ZIYAD ZHAZHA","MUHAMMAD YASIR AL FAZAR JHIRA","RAFA"],
+    "Favian":[ "ANGGA PRATAMA PUTRA","PRAWIRO PUJO TUNGGAL JATI","MUHAMMAD MARPIN","MARFEL SAPUTRA","MELDI NOVRIANSYAH","FAUZAN IBNI JABAR","MUHAMMAD FADHIL BUANA","QHEIZAN ALQIZA ARISDA","REZFY FAKHRYAZKA","MIKA RAHEL YUSUF","KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI","ARYA DIFA ALSYA","REYNALDI MALIK IBRAHIM ALFARIDZI","MUHAMMAD XAVI NF","MUHAMMAD FAISAL FIKRIANSYAH","HAFIDZ ALRIZKY","NAUFAL AKBAR ALKHATIRI","FARAZH SAYYID PUTRA KENEGA","SYAHRUL RAMADHAN","LUTHFAN ADZAKI","MUHAMMAD ABIL IRWANSYAH","ALIF SAMUDRA","FAHRIE OKTAVIRANO FITRIS"],
+    "Dimas":[ "DIKKI KURNIAWAN","GHOZY FATURRAHMAN","MUHAMMAD THOORIQ","AHMAD RIYADI","ALIF MUHAMMAD YUSUF","BASRI AL HAZIQ ZULFAHMI","MUHAMMAD FAQIH HAFIDZALLAH","ABDULLAH MUKTI HAFIDZALLAH","DEDI SETIADI","FAKHRI AL MUZAKKI","ILHAM MUKMIN AL FARABI","MUHAMMAD ALLAM NUR HUSAIN","MUHAMMAD FIRAAS AL INSYIROH","NABIL NAJMI","SATRIO ABIMAYU","TEGAR HIDAYAT","WAFII FADHLURROHMAN","MUHAMMAD RIJALUL KAMIL","ALVIN HERFIANTINO","ZAHIR ZIBRAN","RADEN AZAA PANCA PUTRA","ZULFAKIH HAERUNNASIHIN"],
+    "Shafwan":[ "AHMAD FARHAAN","ANUGRAH PRATAMA","CAHYIS ISZAM","FAHRY AKBAR RAMDHANI","HABIB RAMADHAN","IHZA TRINANDI","ILHAM","M.ARYA MAHDI WAFI EL-FAUZANI","MAHESA AULIA GIFFARI","MUHAMAD YUSUF ARROSIYD","MUHAMMAD USAMAH","NAFIS","RAKA SEPTIAN","RENAL MARTIN","ROHADIN FIRDAUS AL QAUSAR","ROID AFDAL"],
+    "Fatimah":[ "NILAM CAHYA","QELZA RAMADHANI ATH THAHIRAH","ASHIFA FITRI RAMADHONI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","NYAYU MARLITSA ARDHANI","WILDA","WINDY WINDARI","AISYAH NURUL AULIA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","EARLYTA ARSYFA SALSABILA","DAFIA NAFLA SYAKIRA","ANISYA SEPTIANI"],
+    "Evita":[ "BILQIS NUR ANISAH","JESSICA PUTRY AYRA","GHENIS ANDIENTIAZ","DINA RUHAYAH","PITRI RAMADANI","GRINNETA NALANI PUTRI","INAYAH NOURAH ANINDYA","SHELENA","FITRAH KIRANA"]
+  };
+
+  const user = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}");
+  const namaNaqib = user.naqibName || "Tidak diketahui";
+  const kelompok = dataSantri[namaNaqib] || [];
+
+  const title = document.getElementById("naqibTitle");
+  const info = document.getElementById("naqibInfo");
+
+  if (!user || user.role !== "naqib") {
+    title.textContent = "Dashboard Naqib (Belum Login)";
+    info.textContent = "Silakan login melalui portal utama.";
+  } else {
+    title.textContent = `Naqib ${namaNaqib}`;
+    info.textContent = `Kelompok: ${kelompok.length} santri`;
+    localStorage.setItem("kelompokNaqib", JSON.stringify(kelompok));
+  }
+
+  function go(page) { window.location.href = page; }
+  function logout() { localStorage.removeItem("cahayaCurrentUser"); window.location.href = "../index.html"; }
+  function backToPortal() { window.location.href = "../index.html"; }
+</script>
+
+</body>
+</html>
