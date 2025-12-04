@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Wali Santri - CAHAYA APP</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #0f766e, #134e4a);
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh; margin: 0; color: white;
+    }
+    .box {
+      background: rgba(255,255,255,0.1);
+      padding: 36px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      width: 90%; max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+    img { width: 80px; border-radius: 50%; margin-bottom: 12px; }
+    input {
+      width: 100%; padding: 10px; margin-bottom: 10px;
+      border: none; border-radius: 10px;
+      font-size: 14px; background: rgba(255,255,255,0.95); color: #111;
+    }
+    button {
+      background: #facc15; color: #1f2937; border: none; border-radius: 10px;
+      width: 100%; padding: 10px; font-weight: bold; cursor: pointer;
+    }
+    button:hover { background: #fde68a; }
+    a { color: #fff; display: block; margin-top: 12px; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <img src="../logofi.png">
+    <h2>Login Wali Santri</h2>
+    <p>Masukkan username & password sesuai data wali</p>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Masuk</button>
+    <a href="../index.html">⬅️ Kembali</a>
+  </div>
+
+  <!-- Import data login wali dari file terpisah -->
+  <script type="module">
+    import { waliList } from './wali-data.js';
+
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+
+    loginBtn.addEventListener("click", () => {
+      const u = usernameInput.value.trim().toLowerCase();
+      const p = passwordInput.value.trim();
+
+      const wali = waliList.find(w => w.username.toLowerCase() === u && w.password === p);
+
+      if(!wali){
+        alert("❌ Username atau password salah.");
+        return;
+      }
+
+      const currentUser = {
+        role: "wali",
+        namaSantri: wali.nama,
+        username: wali.username
+      };
+
+      localStorage.setItem("cahayaCurrentUser", JSON.stringify(currentUser));
+      location.href = "../wali/index.html";
+    });
+  </script>
+</body>
+</html>
