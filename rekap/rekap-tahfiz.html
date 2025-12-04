@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📖 Rekap Setoran Tahfiz – CAHAYA APP</title>
+  <style>
+    body{font-family:"Poppins",Arial,sans-serif;background:#f3f4f6;margin:0;color:#111827;}
+    header{background:#2563eb;color:white;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;}
+    header h1{margin:0;font-size:1.2rem;font-weight:700;}
+    main{max-width:1100px;margin:24px auto;padding:0 16px 24px;}
+    .card{background:white;border-radius:16px;padding:20px;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
+    label{font-weight:600;font-size:.9rem;}
+    select,input[type=date]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #d1d5db;margin-top:4px;font-size:.9rem;box-sizing:border-box;}
+    .filter-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+    .filter-row>div{flex:1;min-width:180px;}
+    button{border:none;border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:.9rem;margin-right:8px;}
+    .btn-primary{background:#2563eb;color:white;}
+    .btn-primary:hover{background:#1d4ed8;}
+    .btn-secondary{background:white;color:#2563eb;border:1px solid #bfdbfe;}
+    .btn-secondary:hover{background:#eff6ff;}
+    table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.82rem;min-width:900px;}
+    th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:center;}
+    th{background:#2563eb;color:white;}
+    td.text-left{text-align:left;}
+    tr:nth-child(even) td{background:#f9fafb;}
+    .table-wrap{overflow-x:auto;margin-top:10px;}
+    #info{font-size:.85rem;margin-top:10px;}
+    .ok{color:#16a34a;} .warn{color:#ea580c;}
+    @media(max-width:640px){main{padding:0 8px 16px;}.card{padding:16px;}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>📖 Rekap Setoran Tahfiz</h1>
+  <button onclick="history.back()" style="background:white;color:#2563eb;padding:6px 12px;border-radius:6px;border:none;font-weight:600;">⬅ Kembali</button>
+</header>
+
+<main>
+  <div class="card">
+    <div class="filter-row">
+      <div>
+        <label>Rentang Waktu</label>
+        <select id="rangeSelect" onchange="toggleCustom()">
+          <option value="hari">Hari Ini</option>
+          <option value="pekan">Pekan Ini</option>
+          <option value="bulan" selected>Bulan Ini</option>
+          <option value="rentang">Rentang Tanggal</option>
+        </select>
+      </div>
+      <div id="customRange" style="display:none;flex:2;gap:8px;flex-wrap:wrap;">
+        <div>
+          <label>Dari</label>
+          <input type="date" id="startDate">
+        </div>
+        <div>
+          <label>Sampai</label>
+          <input type="date" id="endDate">
+        </div>
+      </div>
+      <div>
+        <label>Program</label>
+        <select id="programFilter">
+          <option value="semua">Semua Program</option>
+          <option value="Tahsin">Tahsin</option>
+          <option value="Tahfiz">Tahfiz</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button class="btn-primary" onclick="tampilkanRekap()">🔍 Tampilkan Rekap</button>
+      <button class="btn-secondary" id="exportBtn" onclick="exportExcel()" disabled>💾 Export Excel</button>
+    </div>
+
+    <p id="info" class="warn"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Program</th>
+            <th>Kelompok</th>
+            <th>Nama Santri</th>
+            <th>Setoran</th>
+            <th>Ayat</th>
+            <th>Kesalahan</th>
+            <th>Nilai</th>
+            <th>Keterangan</th>
+            <th>Guru</th>
+          </tr>
+        </thead>
+        <tbody id="rekapBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam",
+    storageBucket: "absensi-santri-fajrul-islam.appspot.com",
+    messagingSenderId: "739928369926",
+    appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  let lastRows = [];
+
+  window.toggleCustom = function(){
+    const val = document.getElementById("rangeSelect").value;
+    document.getElementById("customRange").style.display = val === "rentang" ? "flex" : "none";
+  };
+
+  function getRange(mode){
+    const now = new Date();
+    let start, end;
+    if(mode === "hari"){
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59);
+    }else if(mode === "pekan"){
+      const first = now.getDate() - now.getDay();
+      start = new Date(now.getFullYear(), now.getMonth(), first);
+      end   = new Date(now.getFullYear(), now.getMonth(), first+6,23,59,59);
+    }else if(mode === "bulan"){
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end   = new Date(now.getFullYear(), now.getMonth()+1, 0,23,59,59);
+    }else{
+      const s = document.getElementById("startDate").value;
+      const e = document.getElementById("endDate").value;
+      if(!s || !e) return null;
+      start = new Date(s);
+      end   = new Date(e + "T23:59:59");
+    }
+    return {start,end};
+  }
+
+  function normalizeDate(d){
+    if(!d) return null;
+    const t = new Date(d);
+    if(isNaN(t)) return null;
+    return t;
+  }
+
+  window.tampilkanRekap = async function(){
+    const info  = document.getElementById("info");
+    const tbody = document.getElementById("rekapBody");
+    const exportBtn = document.getElementById("exportBtn");
+    tbody.innerHTML = "";
+    exportBtn.disabled = true;
+
+    const rangeSel = document.getElementById("rangeSelect").value;
+    const programFilter = document.getElementById("programFilter").value;
+    const range = getRange(rangeSel);
+    if(!range){ info.textContent = "❌ Lengkapi tanggal rentang."; return; }
+    const {start,end} = range;
+
+    info.textContent = "⏳ Mengambil data setoran tahfiz dari Firebase...";
+    const snap = await get(child(ref(db), "cahaya_app/setoran_tahfiz"));
+    if(!snap.exists()){
+      info.textContent = "❌ Tidak ada data setoran tahfiz.";
+      return;
+    }
+
+    const raw = snap.val();
+    const rows = [];
+
+    for(const [id, log] of Object.entries(raw)){
+      const tglObj = normalizeDate(log.tanggal || log.tgl || log.waktuSimpan);
+      if(!tglObj) continue;
+      if(tglObj < start || tglObj > end) continue;
+
+      const program = log.program || "-";
+      if(programFilter !== "semua" && program !== programFilter) continue;
+
+      const base = {
+        tanggal : log.tanggal || tglObj.toISOString().slice(0,10),
+        program : program,
+        kelompok: log.kelompok || "-",
+        guru    : log.guru || "-"
+      };
+
+      if(Array.isArray(log.data)){
+        log.data.forEach(item => {
+          rows.push({
+            ...base,
+            santri    : item.nama || item.santri || "-",
+            setoran   : item.setoran || "-",
+            ayat      : item.ayat || item.jumlahAyat || "",
+            kesalahan : item.kesalahan || "",
+            nilai     : item.nilai || "",
+            keterangan: item.ket || item.keterangan || ""
+          });
+        });
+      }
+    }
+
+    if(!rows.length){
+      info.textContent = "ℹ️ Tidak ada data pada rentang & filter terpilih.";
+      return;
+    }
+
+    rows.sort((a,b) => a.tanggal.localeCompare(b.tanggal));
+
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.tanggal}</td>
+        <td>${r.program}</td>
+        <td>${r.kelompok}</td>
+        <td class="text-left">${r.santri}</td>
+        <td class="text-left">${r.setoran}</td>
+        <td>${r.ayat}</td>
+        <td>${r.kesalahan}</td>
+        <td>${r.nilai}</td>
+        <td class="text-left">${r.keterangan}</td>
+        <td>${r.guru}</td>
+      </tr>
+    `).join("");
+
+    lastRows = rows;
+    exportBtn.disabled = false;
+    info.textContent = `✅ ${rows.length} baris data setoran tahfiz ditemukan.`;
+    info.className = "ok";
+  };
+
+  window.exportExcel = function(){
+    if(!lastRows.length) return alert("Tidak ada data untuk diexport.");
+    const ws = XLSX.utils.json_to_sheet(lastRows, {
+      header:["tanggal","program","kelompok","santri","setoran","ayat","kesalahan","nilai","keterangan","guru"]
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "SetoranTahfiz");
+    const today = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `Rekap_Setoran_Tahfiz_${today}.xlsx`);
+  };
+</script>
+</body>
+</html>
